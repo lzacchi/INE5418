@@ -6,23 +6,62 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "server.h"
 
 int server_listen(int *socket)
 {
-    int clients[N_CLIENTS];
-    int connection = 0;
+    int server_sockfd = *socket;
+    int connections = N_CLIENTS;
+    int requests = 0;
+    int clients[connections];
+    unsigned int client_len;
+    struct sockaddr_in client_address;
+
+    listen(server_sockfd, connections);
+    printf("Listening to max number of clients: %d\n", connections);
     while (1)
     {
-        // new thtread for accep
+        printf("Server listening\n");
+        client_len = sizeof(client_address);
+
+        if (requests == (connections - 1))
+        {
+            printf("Reached max number of connected clients\n");
+        }
+        else
+        {
+            clients[requests] = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len);
+            pthread_t cli_thread;
+
+            pthread_create(&cli_thread, NULL, client_thread, (void *)clients[requests]);
+            requests++;
+        }
+        requests--;
     }
+    return 0;
+}
+
+void *client_thread(void *args)
+{
+    int client_sockfd = *((int *)args);
+    char filename;
+    while (1)
+    {
+        read(client_sockfd, &filename, 1);
+        write(client_sockfd, "Error: no such file or directory\n", 1);
+        sleep(10);
+        break;
+    }
+    close(client_sockfd);
+    return 0;
 }
 
 int main()
 {
     int server_sockfd;
-    int server_len, client_len;
+    int server_len;
 
     struct sockaddr_in server_address;
 
@@ -38,6 +77,8 @@ int main()
     bind(server_sockfd, (struct sockaddr *)&server_address, server_len);
 
     server_listen(&server_sockfd);
+    close(server_sockfd);
+    exit(0);
 
-    // accept
+    return 0;
 }

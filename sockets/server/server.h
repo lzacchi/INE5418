@@ -11,4 +11,6 @@
 
 int server_listen(int *socket);
 
+void *client_thread(void *args);
+
 int main();
