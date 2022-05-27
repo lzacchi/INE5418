@@ -6,24 +6,24 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string.h>
 
 #include "server.h"
+#include "files.h"
 
 int server_listen(int *socket)
 {
     int server_sockfd = *socket;
     int connections = N_CLIENTS;
     int requests = 0;
-    int clients[connections];
+    int client_sockfd;
     unsigned int client_len;
     struct sockaddr_in client_address;
 
     listen(server_sockfd, connections);
-    printf("Listening to max number of clients: %d\n", connections);
+    printf("Server listening\n");
+    printf("Max number of clients: %d\n", connections);
     while (1)
     {
-        printf("Server listening\n");
         client_len = sizeof(client_address);
 
         if (requests == (connections - 1))
@@ -32,10 +32,10 @@ int server_listen(int *socket)
         }
         else
         {
-            clients[requests] = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len);
+            client_sockfd = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len);
             pthread_t cli_thread;
 
-            pthread_create(&cli_thread, NULL, client_thread, (void *)clients[requests]);
+            pthread_create(&cli_thread, NULL, client_thread, (void *)&client_sockfd);
             requests++;
         }
         requests--;
@@ -46,11 +46,23 @@ int server_listen(int *socket)
 void *client_thread(void *args)
 {
     int client_sockfd = *((int *)args);
-    char filename;
+    printf("created thread\n");
     while (1)
     {
-        read(client_sockfd, &filename, 1);
-        write(client_sockfd, "Error: no such file or directory\n", 1);
+        int str_len = 0;
+        read(client_sockfd, &str_len, sizeof(int));
+
+        char filename[str_len];
+        read(client_sockfd, &filename, sizeof(filename));
+        printf("File name is '%s'\n", filename);
+
+        long filesize = 0;
+        char *file = read_file(filename, &filesize);
+        write(client_sockfd, &filesize, sizeof(long));
+        printf("File Size is %ld bytes\n", filesize);
+
+        printf("Sending file...\n");
+        write(client_sockfd, file, filesize);
         sleep(10);
         break;
     }
@@ -68,8 +80,14 @@ int main()
     char ch;
 
     server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (server_sockfd < 0)
+    {
+        printf("Error opening socket\n");
+    }
+
     server_address.sin_family = AF_INET;
-    server_address.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(9734);
 
     server_len = sizeof(server_address);

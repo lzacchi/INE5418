@@ -24,15 +24,15 @@ int main()
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = inet_addr(IP_ADDR);
-    address.sin_port = 9734;
+    address.sin_port = htons(9734);
     len = sizeof(address);
-    result = connect(sockfd, (struct sockaddr *)&address, len);
 
-    if (result == -1)
+    if (connect(sockfd, (struct sockaddr *)&address, len) < 0)
     {
-        perror("Client error");
+        perror("ERROR connecting");
         exit(1);
     }
+
     printf("Socket connected\n");
 
 get_input:
@@ -45,16 +45,18 @@ get_input:
         return 0;
     }
 
+    int file_str_size = sizeof(filename) - 1;
+    write(sockfd, &file_str_size, sizeof(int));
     write(sockfd, &filename, sizeof(filename));
-    int filesize = 0;
-    read(sockfd, &filesize, sizeof(int));
+    long filesize = 0;
+    read(sockfd, &filesize, sizeof(long));
 
     if (filesize == 0)
     {
         perror("File wasn't found\n");
         goto get_input;
     }
-    printf("Received file of size: %d\n", filesize);
+    printf("Received file of size: %ld\n", filesize);
     char file[filesize];
     read(sockfd, &file, filesize);
 
