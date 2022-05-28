@@ -13,12 +13,10 @@
 int main()
 {
     char IP_ADDR[] = "0.0.0.0";
-
     int sockfd;
     int len;
     struct sockaddr_in address;
     int result;
-
     char filename[] = "README.md";
 
     printf("Opening socket at address %s\n", IP_ADDR);
@@ -30,21 +28,13 @@ int main()
 
     if (connect(sockfd, (struct sockaddr *)&address, len) < 0)
     {
-        perror("ERROR connecting");
+        perror("ERROR connecting to socket");
         exit(1);
     }
 
     printf("Socket connected\n");
 
-get_input:
     // todo: get user input to string
-    // todo: close when sending 'q'
-    if (strcmp(filename, "q") == 0)
-    {
-        printf("Closing application\n");
-        close(sockfd);
-        return 0;
-    }
 
     int file_str_size = sizeof(filename);
     write(sockfd, &file_str_size, sizeof(int));
@@ -54,15 +44,14 @@ get_input:
     read(sockfd, &filesize, sizeof(int));
     if (filesize == 0)
     {
-        perror("File wasn't found\n");
-        goto get_input;
+        perror("File doesn't exist\n");
+        exit(-1);
     }
     printf("Received size of %i bytes\n", filesize);
     char file[filesize];
     read(sockfd, &file, filesize);
     save_file(file, "filename");
 
-    // close(sockfd);
-    // goto get_input;
+    close(sockfd);
     return 0;
 }

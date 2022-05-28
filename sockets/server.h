@@ -1,15 +1,11 @@
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <netinet/in.h>
 #include <unistd.h>
-
-#define N_CLIENTS 2 /* Max number of simultaneous clients */
-
-int server_listen(int *socket);
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 void *client_thread(void *args);
 
