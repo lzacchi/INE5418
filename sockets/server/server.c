@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <malloc.h>
 
 #include "server.h"
 #include "files.h"
@@ -53,16 +54,17 @@ void *client_thread(void *args)
         read(client_sockfd, &str_len, sizeof(int));
 
         char filename[str_len];
-        read(client_sockfd, &filename, sizeof(filename));
+        read(client_sockfd, &filename, str_len);
         printf("File name is '%s'\n", filename);
 
-        long filesize = 0;
-        char *file = read_file(filename, &filesize);
-        write(client_sockfd, &filesize, sizeof(long));
-        printf("File Size is %ld bytes\n", filesize);
+        char *file = read_file(filename);
+        int filesize = malloc_usable_size(file);
+        write(client_sockfd, &filesize, sizeof(int));
+        printf("File Size is %i bytes\n", filesize);
 
         printf("Sending file...\n");
         write(client_sockfd, file, filesize);
+        printf("Finished sending file\n");
         sleep(10);
         break;
     }

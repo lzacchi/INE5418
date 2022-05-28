@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "client.h"
+#include "files.h"
 
 int main()
 {
@@ -18,7 +19,7 @@ int main()
     struct sockaddr_in address;
     int result;
 
-    char filename[] = "README.txt";
+    char filename[] = "README.md";
 
     printf("Opening socket at address %s\n", IP_ADDR);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -45,21 +46,23 @@ get_input:
         return 0;
     }
 
-    int file_str_size = sizeof(filename) - 1;
+    int file_str_size = sizeof(filename);
     write(sockfd, &file_str_size, sizeof(int));
     write(sockfd, &filename, sizeof(filename));
-    long filesize = 0;
-    read(sockfd, &filesize, sizeof(long));
 
+    int filesize = 0;
+    read(sockfd, &filesize, sizeof(int));
     if (filesize == 0)
     {
         perror("File wasn't found\n");
         goto get_input;
     }
-    printf("Received file of size: %ld\n", filesize);
+    printf("Received size of %i bytes\n", filesize);
     char file[filesize];
     read(sockfd, &file, filesize);
+    save_file(file, "filename");
 
-    goto get_input;
-    return -1;
+    // close(sockfd);
+    // goto get_input;
+    return 0;
 }
