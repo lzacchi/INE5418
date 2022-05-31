@@ -8,7 +8,12 @@
 #include <string.h>
 
 #include "client.h"
-#include "files.h"
+#include "../file_handler/file_handler.h"
+
+int client_connect()
+{
+    return 0;
+}
 
 int main()
 {
@@ -19,7 +24,11 @@ int main()
     struct sockaddr_in address;
     int result;
 
-    char filename[] = "README.md";
+    char input[10];
+    char *start_msg = "Help:\nTo list files, type 'list'\nTo request a file, type the file name\nTo close the connection, type 'quit'\nInput: ";
+
+    fputs(start_msg, stdout);
+    fgets(input, sizeof(input), stdin);
 
     printf("Opening socket at address %s\n", IP_ADDR);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -37,32 +46,36 @@ int main()
     printf("Socket connected\n");
 
 get_input:
-    // todo: get user input to string
-    // todo: close when sending 'q'
-    if (strcmp(filename, "q") == 0)
+    while (1)
     {
-        printf("Closing application\n");
-        close(sockfd);
-        return 0;
+
+        // todo: get user input to string
+        // todo: close when sending 'q'
+        if (strcmp(input, "quit") == 0)
+        {
+            printf("Closing application\n");
+            close(sockfd);
+            return 0;
+        }
+
+        int file_str_size = sizeof(input);
+        write(sockfd, &file_str_size, sizeof(int));
+        write(sockfd, &input, sizeof(input));
+
+        int filesize = 0;
+        read(sockfd, &filesize, sizeof(int));
+        if (filesize == 0)
+        {
+            perror("File wasn't found\n");
+            goto get_input;
+        }
+        printf("Received size of %i bytes\n", filesize);
+        char file[filesize];
+        read(sockfd, &file, filesize);
+        save_file(file, "filename");
+
+        // close(sockfd);
+        // goto get_input;
     }
-
-    int file_str_size = sizeof(filename);
-    write(sockfd, &file_str_size, sizeof(int));
-    write(sockfd, &filename, sizeof(filename));
-
-    int filesize = 0;
-    read(sockfd, &filesize, sizeof(int));
-    if (filesize == 0)
-    {
-        perror("File wasn't found\n");
-        goto get_input;
-    }
-    printf("Received size of %i bytes\n", filesize);
-    char file[filesize];
-    read(sockfd, &file, filesize);
-    save_file(file, "filename");
-
-    // close(sockfd);
-    // goto get_input;
     return 0;
 }

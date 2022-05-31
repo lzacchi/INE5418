@@ -9,13 +9,15 @@
 #include <malloc.h>
 
 #include "server.h"
-#include "files.h"
+#include "../file_handler/file_handler.h"
+
+int connected_clients = 0;
+pthread_mutex_t mutex;
 
 int server_listen(int *socket)
 {
     int server_sockfd = *socket;
     int connections = N_CLIENTS;
-    int requests = 0;
     int client_sockfd;
     unsigned int client_len;
     struct sockaddr_in client_address;
@@ -26,27 +28,38 @@ int server_listen(int *socket)
     while (1)
     {
         client_len = sizeof(client_address);
-
-        if (requests == (connections - 1))
+        if (connected_clients == (connections))
         {
             printf("Reached max number of connected clients\n");
         }
         else
         {
             client_sockfd = accept(server_sockfd, (struct sockaddr *)&client_address, &client_len);
-            pthread_t cli_thread;
-
-            pthread_create(&cli_thread, NULL, client_thread, (void *)&client_sockfd);
-            requests++;
+            pthread_t client;
+            pthread_create(&client, NULL, client_handler, (void *)&client_sockfd);
         }
-        requests--;
     }
     return 0;
 }
 
-void *client_thread(void *args)
+void increment_client_counter()
 {
-    int client_sockfd = *((int *)args);
+    pthread_mutex_lock(&mutex);
+    ++connected_clients;
+    pthread_mutex_unlock(&mutex);
+}
+
+void decrement_client_counter()
+{
+    pthread_mutex_lock(&mutex);
+    --connected_clients;
+    pthread_mutex_unlock(&mutex);
+}
+
+void *client_handler(void *client_socket)
+{
+    int client_sockfd = *((int *)client_socket);
+    increment_client_counter();
     printf("created thread\n");
     while (1)
     {
@@ -69,6 +82,7 @@ void *client_thread(void *args)
         break;
     }
     close(client_sockfd);
+    decrement_client_counter();
     return 0;
 }
 

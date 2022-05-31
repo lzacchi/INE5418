@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "files.h"
+#include "file_handler.h"
 
 char *read_file(char *filename)
 {

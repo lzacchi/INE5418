@@ -11,6 +11,10 @@
 
 int server_listen(int *socket);
 
-void *client_thread(void *args);
+void *client_handler(void *client_socket);
+
+void increment_client_counter();
+
+void decrement_client_counter();
 
 int main();
