@@ -68,9 +68,11 @@ int main()
     while (TRUE)
     {
         client_len = sizeof(client_address);
-        if (requests >= connections)
+        if (requests > connections)
         {
             printf("Error: max number of parallel connections reached\n");
+            requests--;
+            // reject connection
         }
         else
         {

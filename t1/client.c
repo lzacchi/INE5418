@@ -17,7 +17,6 @@ int main()
     int len;
     struct sockaddr_in address;
     int result;
-    char filename[] = "README.md";
 
     printf("Opening socket at address %s\n", IP_ADDR);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -34,7 +33,9 @@ int main()
 
     printf("Socket connected\n");
 
-    // todo: get user input to string
+    puts("Enter the name of the file you want to transfer [case sensitive]:");
+    char filename[256];
+    scanf("%[^\n]", filename);
 
     int file_str_size = sizeof(filename);
     write(sockfd, &file_str_size, sizeof(int));
@@ -50,7 +51,7 @@ int main()
     printf("Received size of %i bytes\n", filesize);
     char file[filesize];
     read(sockfd, &file, filesize);
-    save_file(file, "filename");
+    save_file(file, filename);
 
     close(sockfd);
     return 0;
