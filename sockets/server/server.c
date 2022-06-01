@@ -70,7 +70,7 @@ void *client_handler(void *client_socket)
         read(client_sockfd, &filename, str_len);
         filename[str_len] = '\0';
 
-        char *file = read_file(filename);
+        char *file = fileread(filename);
         int file_size = malloc_usable_size(file);
 
         write(client_sockfd, &file_size, sizeof(int));

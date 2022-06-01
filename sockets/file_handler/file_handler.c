@@ -2,7 +2,7 @@
 
 #include "file_handler.h"
 
-void save_file(char *file_content, char *file)
+void filesave(char *file_content, char *file)
 {
     FILE *file_pointer;
     file_pointer = fopen(file, "w");
@@ -14,7 +14,7 @@ void save_file(char *file_content, char *file)
     fclose(file_pointer);
 }
 
-char *read_file(char *file)
+char *fileread(char *file)
 {
     FILE *file_pointer;
     file_pointer = fopen(file, "rb");

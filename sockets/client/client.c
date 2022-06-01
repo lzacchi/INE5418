@@ -30,7 +30,7 @@ int client_connect(int *socket, char *input)
     printf("Downloading file...\n");
     char file[filesize];
     read(sockfd, &file, filesize);
-    save_file(file, "client/files/download");
+    filesave(file, "client/files/download");
     printf("Saved file to client/files/download\n");
 
     close(sockfd);

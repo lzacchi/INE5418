@@ -1,6 +1,8 @@
 # Socket Programmin
 
 ## Instructions:
+* Create a directory called 'files' inside the client directory. Otherwise alter client.c line 33 `filesave(file, "client/files/download");`
+to reflect the new desired output location
 ### Manual compilation:
 * Server: `gcc -o server.out server/server.c file_handler/file_handler.c -lpthread`
 * Client: `gcc -o client.out client/client.c file_handler/file_handler.c`
