@@ -14,6 +14,20 @@
 int connected_clients = 0;
 pthread_mutex_t mutex;
 
+void increment_client_counter()
+{
+    pthread_mutex_lock(&mutex);
+    ++connected_clients;
+    pthread_mutex_unlock(&mutex);
+}
+
+void decrement_client_counter()
+{
+    pthread_mutex_lock(&mutex);
+    --connected_clients;
+    pthread_mutex_unlock(&mutex);
+}
+
 int server_listen(int *socket)
 {
     int server_sockfd = *socket;
@@ -42,25 +56,11 @@ int server_listen(int *socket)
     return 0;
 }
 
-void increment_client_counter()
-{
-    pthread_mutex_lock(&mutex);
-    ++connected_clients;
-    pthread_mutex_unlock(&mutex);
-}
-
-void decrement_client_counter()
-{
-    pthread_mutex_lock(&mutex);
-    --connected_clients;
-    pthread_mutex_unlock(&mutex);
-}
-
 void *client_handler(void *client_socket)
 {
     int client_sockfd = *((int *)client_socket);
     increment_client_counter();
-    printf("created thread\n");
+    printf("Client conected.\nNumber of connected clients: %d\n", connected_clients);
     while (1)
     {
         int str_len = 0;
@@ -68,21 +68,22 @@ void *client_handler(void *client_socket)
 
         char filename[str_len];
         read(client_sockfd, &filename, str_len);
-        printf("File name is '%s'\n", filename);
+        filename[str_len] = '\0';
 
         char *file = read_file(filename);
-        int filesize = malloc_usable_size(file);
-        write(client_sockfd, &filesize, sizeof(int));
-        printf("File Size is %i bytes\n", filesize);
+        int file_size = malloc_usable_size(file);
 
-        printf("Sending file...\n");
-        write(client_sockfd, file, filesize);
-        printf("Finished sending file\n");
-        sleep(10);
+        write(client_sockfd, &file_size, sizeof(int));
+
+        printf("Transferring file...\n");
+        write(client_sockfd, file, file_size);
+        printf("Done!\n");
+
         break;
     }
     close(client_sockfd);
     decrement_client_counter();
+    printf("Closing connection\nNumber of connected clients: %d\n", connected_clients);
     return 0;
 }
 

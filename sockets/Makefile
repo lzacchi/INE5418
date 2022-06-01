@@ -1,5 +1,5 @@
-TARGET_SERVER = server_app.out
-TARGET_CLIENT = client_app.out
+TARGET_SERVER = server.out
+TARGET_CLIENT = client.out
 
 ifndef BUILD_DIR
 	BUILD_DIR=$(CURDIR)

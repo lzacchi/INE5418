@@ -2,40 +2,39 @@
 
 #include "file_handler.h"
 
-char *read_file(char *filename)
+void save_file(char *file_content, char *file)
 {
-    long numbytes;
-    FILE *ptr;
-    ptr = fopen(filename, "r");
-
-    if (ptr == NULL)
+    FILE *file_pointer;
+    file_pointer = fopen(file, "w");
+    if (file_pointer == NULL)
     {
-        perror("File not found");
+        perror("Error: Can't save file\n");
     }
-
-    fseek(ptr, 0L, SEEK_END);
-    long filesize = ftell(ptr);
-    fseek(ptr, 0L, SEEK_SET);
-
-    char *buffer = (char *)calloc(filesize, sizeof(char));
-    if (buffer == NULL)
-    {
-        perror("Buffer error");
-        exit(1);
-    }
-    fread(buffer, sizeof(char), filesize, ptr);
-    fclose(ptr);
-    return buffer;
+    fprintf(file_pointer, "%s", file_content);
+    fclose(file_pointer);
 }
 
-void save_file(char *buffer, char *filename)
+char *read_file(char *file)
 {
-    FILE *ptr;
-    ptr = fopen(filename, "w");
-    if (ptr == NULL)
+    FILE *file_pointer;
+    file_pointer = fopen(file, "rb");
+
+    if (file_pointer == NULL)
     {
-        perror("Error opening file to save");
+        perror("Error: No such file\n");
     }
-    fprintf(ptr, "%s", buffer);
-    fclose(ptr);
+
+    fseek(file_pointer, 0L, SEEK_END);
+    long filesize = ftell(file_pointer);
+    fseek(file_pointer, 0L, SEEK_SET);
+
+    char *file_content = (char *)calloc(filesize, sizeof(char));
+    if (file_content == NULL)
+    {
+        perror("file_content error\n");
+        exit(1);
+    }
+    fread(file_content, sizeof(char), filesize, file_pointer);
+    fclose(file_pointer);
+    return file_content;
 }

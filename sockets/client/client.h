@@ -6,4 +6,5 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+int client_connect(int *socket, char *input);
 int main();

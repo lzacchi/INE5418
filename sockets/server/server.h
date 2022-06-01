@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define N_CLIENTS 2 /* Max number of simultaneous clients */
+#define N_CLIENTS 10 /* Max number of simultaneous clients */
 
 int server_listen(int *socket);
 
